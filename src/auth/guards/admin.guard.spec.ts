@@ -1,4 +1,3 @@
-import { AuthGuard } from '@nestjs/passport';
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { AdminGuard } from './admin.guard';
 import { AuthService } from '../auth.service';
@@ -16,10 +15,16 @@ describe('AdminGuard', () => {
     }) as unknown as ExecutionContext;
 
   const makeGuard = (isAdmin: boolean) => {
-    const authService = { isAdmin: jest.fn().mockResolvedValue(isAdmin) } as unknown as AuthService;
+    const authService = {
+      isAdmin: jest.fn().mockResolvedValue(isAdmin),
+    } as unknown as AuthService;
     const guard = new AdminGuard(authService);
     // 부모(AuthGuard)의 인증 통과를 가정한다.
-    const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(guard));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const parentProto: object = Object.getPrototypeOf(
+      Object.getPrototypeOf(guard),
+    );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     jest.spyOn(parentProto, 'canActivate').mockResolvedValue(true);
     return { guard, authService };
   };

@@ -14,11 +14,13 @@ describe('validateEnv', () => {
   });
 
   it('DATABASE_URL이 없으면 예외를 던진다', () => {
-    const { DATABASE_URL, ...rest } = valid;
+    const rest = { SUPABASE_URL: valid.SUPABASE_URL };
     expect(() => validateEnv(rest)).toThrow();
   });
 
   it('SUPABASE_URL이 URL 형식이 아니면 예외를 던진다', () => {
-    expect(() => validateEnv({ ...valid, SUPABASE_URL: 'not-a-url' })).toThrow();
+    expect(() =>
+      validateEnv({ ...valid, SUPABASE_URL: 'not-a-url' }),
+    ).toThrow();
   });
 });
