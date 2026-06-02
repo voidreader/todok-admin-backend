@@ -1,11 +1,5 @@
 import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';
-
-// jwks-rsa는 ESM 의존성(jose)을 포함하므로 Jest 환경에서 mock 처리
-jest.mock('jwks-rsa', () => ({
-  passportJwtSecret: jest.fn().mockReturnValue(() => {}),
-}));
-
 import { SupabaseJwtStrategy } from './supabase-jwt.strategy';
 
 describe('SupabaseJwtStrategy', () => {

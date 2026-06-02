@@ -8,7 +8,11 @@ import { AdminGuard } from './guards/admin.guard';
 import { SupabaseJwtStrategy } from './strategies/supabase-jwt.strategy';
 
 @Module({
-  imports: [ConfigModule, PassportModule, TypeOrmModule.forFeature([AdminUser])],
+  imports: [
+    ConfigModule,
+    PassportModule,
+    TypeOrmModule.forFeature([AdminUser]),
+  ],
   providers: [SupabaseJwtStrategy, AuthService, AdminGuard],
   exports: [AuthService, AdminGuard],
 })

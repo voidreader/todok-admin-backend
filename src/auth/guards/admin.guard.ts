@@ -21,7 +21,9 @@ export class AdminGuard extends AuthGuard('supabase-jwt') {
     }
 
     // 2) 어드민 인가
-    const request = context.switchToHttp().getRequest<{ user: AuthenticatedUser }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<{ user: AuthenticatedUser }>();
     const isAdmin = await this.authService.isAdmin(request.user);
     if (!isAdmin) {
       throw new ForbiddenException('관리자 권한이 필요합니다.');

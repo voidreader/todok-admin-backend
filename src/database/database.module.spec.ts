@@ -16,7 +16,10 @@ describe('typeOrmConfigFactory', () => {
   });
 
   it('postgres 타입과 DATABASE_URL을 사용한다', () => {
-    const options = typeOrmConfigFactory(config) as { type: string; url: string };
+    const options = typeOrmConfigFactory(config) as {
+      type: string;
+      url: string;
+    };
     expect(options.type).toBe('postgres');
     expect(options.url).toContain('postgres://');
   });

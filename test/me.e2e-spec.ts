@@ -4,20 +4,14 @@ import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-
-// jwks-rsa는 ESM 의존성(jose@6)을 포함하므로 Jest 환경에서 mock 처리한다.
-// 토큰 없는 요청의 401 검증에는 JWKS 실제 동작이 필요 없다.
-jest.mock('jwks-rsa', () => ({
-  passportJwtSecret: jest.fn().mockReturnValue(() => {}),
-}));
-
+import { App } from 'supertest/types';
 import { MeController } from '../src/me/me.controller';
 import { AdminGuard } from '../src/auth/guards/admin.guard';
 import { AuthService } from '../src/auth/auth.service';
 import { SupabaseJwtStrategy } from '../src/auth/strategies/supabase-jwt.strategy';
 
 describe('Me (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<App>;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({

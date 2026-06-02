@@ -23,23 +23,29 @@ describe('AuthService', () => {
     service = moduleRef.get(AuthService);
   });
 
-  const baseUser = (overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser => ({
+  const baseUser = (
+    overrides: Partial<AuthenticatedUser> = {},
+  ): AuthenticatedUser => ({
     userId: '11111111-1111-1111-1111-111111111111',
     appMetadata: {},
     ...overrides,
   });
 
   it('app_metadata.role이 admin이면 테이블 조회 없이 true', async () => {
-    const result = await service.isAdmin(baseUser({ appMetadata: { role: 'admin' } }));
+    const result = await service.isAdmin(
+      baseUser({ appMetadata: { role: 'admin' } }),
+    );
     expect(result).toBe(true);
     expect(findOne).not.toHaveBeenCalled();
   });
 
   it('admin_users 테이블에 존재하면 true', async () => {
-    findOne.mockResolvedValue({ userId: baseUser().userId } as AdminUser);
+    findOne.mockResolvedValue({ userId: baseUser().userId });
     const result = await service.isAdmin(baseUser());
     expect(result).toBe(true);
-    expect(findOne).toHaveBeenCalledWith({ where: { userId: baseUser().userId } });
+    expect(findOne).toHaveBeenCalledWith({
+      where: { userId: baseUser().userId },
+    });
   });
 
   it('role도 아니고 테이블에도 없으면 false', async () => {
