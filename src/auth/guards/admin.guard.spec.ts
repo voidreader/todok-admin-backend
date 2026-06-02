@@ -19,12 +19,10 @@ describe('AdminGuard', () => {
       isAdmin: jest.fn().mockResolvedValue(isAdmin),
     } as unknown as AuthService;
     const guard = new AdminGuard(authService);
-    // 부모(AuthGuard)의 인증 통과를 가정한다.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const parentProto: object = Object.getPrototypeOf(
-      Object.getPrototypeOf(guard),
-    );
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    // 부모(AuthGuard)의 canActivate를 stub해 인증 통과를 가정한다.
+    const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(guard)) as {
+      canActivate: (...args: unknown[]) => Promise<boolean>;
+    };
     jest.spyOn(parentProto, 'canActivate').mockResolvedValue(true);
     return { guard, authService };
   };
