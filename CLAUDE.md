@@ -22,9 +22,32 @@
 
 - **런타임/프레임워크**: Node.js + NestJS 11
 - **언어**: TypeScript 5 (`strictNullChecks` 활성)
+- **DB 연동**: TypeORM (Supabase Postgres 직접 연결)
+- **인증**: Passport JWT + Supabase 비대칭 JWT(JWKS) 검증
 - **패키지 매니저**: pnpm (npm/yarn 사용 금지)
 - **테스트**: Jest (`*.spec.ts`), E2E는 `test/` (`*.e2e-spec.ts`)
 - **린트/포맷**: ESLint + Prettier
+
+## 아키텍처 결정
+
+기반 설계는 `docs/superpowers/specs/2026-06-02-db-and-auth-design.md`에 정리되어 있다.
+
+### DB 연동 (TypeORM)
+
+- TypeORM `DataSource`로 Supabase Postgres에 **직접 연결**한다. 직접 연결 role은
+  RLS를 우회하므로 기존 웹의 service role 권한을 DB 레벨에서 확보한다.
+- **`synchronize: false`, `migrationsRun: false`를 반드시 유지한다.** 엔티티 변경이
+  운영 DB 스키마에 자동 반영되어서는 안 된다.
+- 엔티티는 기존 Supabase 테이블을 **매핑만** 한다. 스키마 정본은
+  `AnonymousMessageWeb/supabase/migrations/`이며 백엔드는 스키마를 소유하지 않는다.
+
+### 어드민 인증 (Supabase JWKS + Guard)
+
+- 어드민 웹이 Supabase Auth로 로그인 → access token(JWT)을 `Authorization: Bearer`로 전달.
+- `SupabaseJwtStrategy`가 JWKS(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`)로 서명 검증
+  (issuer/audience 확인). HS256 secret이 아니라 **비대칭 키(JWKS)** 기반이다.
+- 인가는 기존 `is_admin()` 로직 재현: `app_metadata.role == 'admin'` 또는
+  `admin_users` 테이블에 user_id 존재. 컨트롤러는 `@UseGuards(AdminGuard)`로 보호한다.
 
 ## 주요 명령어
 
@@ -56,3 +79,5 @@ pnpm test:e2e           # E2E 테스트
   `.env`는 git에 커밋하지 않는다 (`.env.example`만 추적).
 - DB 스키마 변경이 필요한 경우, 실제 스키마는 `AnonymousMessageWeb`의 Supabase
   마이그레이션과 정합성을 맞춘다. 임의로 스키마를 가정하지 말고 실제 마이그레이션을 확인한다.
+- **허가 없이 운영 DB 스키마를 수정하지 않는다.** TypeORM `synchronize`/`migrationsRun`은
+  항상 비활성이며, 스키마 변경은 Supabase 마이그레이션으로 사용자 승인을 받은 뒤에만 진행한다.
