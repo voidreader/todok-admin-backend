@@ -1,98 +1,87 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# todok-admin-backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Todok(익명 메시지 서비스, `AnonymousMessageWeb`)의 어드민 웹 애플리케이션을 위한
+백엔드 서비스다. 운영자 전용 백오피스 API(신고 처리, 모더레이션, 사용자/프로필 관리,
+포인트/제재 등)를 제공한다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 기술 스택
 
-## Description
+- Node.js + NestJS 11
+- TypeScript 5
+- TypeORM (Supabase Postgres 직접 연결)
+- Passport JWT + Supabase 비대칭 JWT(JWKS) 검증
+- pnpm
+- Jest
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 프로젝트 설정
 
-## Project setup
+의존성을 설치한다.
 
 ```bash
-$ pnpm install
+pnpm install
 ```
 
-## Compile and run the project
+## 환경 변수 설정
+
+이 서비스는 Supabase Postgres 연결과 어드민 인증에 환경 변수를 사용한다. 실제 비밀값이
+필요하므로 `.env` 파일은 저장소에 포함하지 않으며, `.env.example`을 복사해 직접 채운다.
+
+1. 예시 파일을 복사한다.
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. `.env`의 값을 실제 Supabase 프로젝트 값으로 채운다.
+
+| 변수 | 필수 | 설명 |
+| --- | --- | --- |
+| `DATABASE_URL` | 필수 | Supabase Postgres 접속 문자열. Supabase 대시보드의 **Project Settings → Database → Connection string**에서 확인한다. |
+| `SUPABASE_URL` | 필수 | Supabase 프로젝트 URL. **Project Settings → API → Project URL**에서 확인한다. JWKS 엔드포인트와 토큰 issuer를 유도하는 데 사용한다. |
+| `PORT` | 선택 | HTTP 포트. 기본값은 `3000`이다. |
+
+환경 변수는 애플리케이션 부팅 시점에 검증한다. `DATABASE_URL`이 없거나 `SUPABASE_URL`이
+URL 형식이 아니면 부팅이 중단된다.
+
+> **참고:** 어드민 인증은 Supabase의 **비대칭 키(JWKS)** 로 JWT 서명을 검증한다. 별도의
+> JWT 시크릿 환경 변수는 필요하지 않으며, `SUPABASE_URL`로부터 JWKS 엔드포인트를 유도한다.
+
+## 실행
 
 ```bash
-# development
-$ pnpm run start
+# 개발 모드 (watch)
+pnpm start:dev
 
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+# 프로덕션 빌드 후 실행
+pnpm build
+pnpm start:prod
 ```
 
-## Run tests
+애플리케이션을 실제로 실행하려면 위의 환경 변수가 유효한 값으로 설정되어 있어야 한다.
+
+## 테스트
 
 ```bash
-# unit tests
-$ pnpm run test
+# 단위 테스트
+pnpm test
 
-# e2e tests
-$ pnpm run test:e2e
+# e2e 테스트
+pnpm test:e2e
 
-# test coverage
-$ pnpm run test:cov
+# 커버리지
+pnpm test:cov
+
+# 린트
+pnpm lint
 ```
 
-## Deployment
+단위 테스트와 e2e 테스트는 `AppModule` 전체를 부팅하지 않으므로 실제 데이터베이스 연결
+없이도 실행된다.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 문서
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+기반 설계와 구현 계획은 다음 문서를 참고한다.
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- 설계: `docs/superpowers/specs/2026-06-02-db-and-auth-design.md`
+- 구현 계획: `docs/superpowers/plans/2026-06-02-db-auth-foundation.md`
+- 프로젝트 가이드: `CLAUDE.md`
